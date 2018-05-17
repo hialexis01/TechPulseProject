@@ -1,4 +1,7 @@
 getwd()
+install.packages("Smisc")
+install.packages("dummies")
+library(Smisc)
 library(psych)
 library(dplyr)
 library(data.table)
@@ -11,29 +14,38 @@ library(gridExtra)
 library(ggfortify)
 library(forecast)
 library(zoo)
+library(dummies)
+library(stargazer)
 
+#This is attaching files for the tech sector
 DataProject <- read.csv("FinalDatafornow.csv", header = TRUE)
 attach(DataProject)
 View(DataProject)
 
-NewRegression <- lm(SFTECH~.-DATE, data = DataProject)
+#First Regression with many economic indicators
+NewRegression <- lm(SFTECH~., data = DataProject)
 summary(NewRegression)
+vif(NewRegression)
 
+#Check for multicollinearity 
 checkforcollin <- data.frame(cor(DataProject),use ="complete.obs")
 write.csv(checkforcollin, "checkforcollin.csv")
 
-Tech<- lm(SFTECH ~ UnemplRate+ FedUndRate +
-         +  CapUtil + DispIncomePerCapita
-           + ProducerPriceIndex
-          +RecessionIdic  + NASDAQCOM
-         
+
+#Another attempt to ignore
+Tech<- lm(SFTECH ~ Unemp+ FedFund +
+         +  CapUtil + CPI +
+           + PPI
+          +RecessionIndic + MinWage + Monetarybase + NASDAQCOM + MedHouseSales
          , data = DataProject)
 summary(Tech)
-
 vif(Tech)
 
+
+#attempt to graph the time series
 graphers <- read.csv("graphthis.csv", header = TRUE)
 attach(graphers)
+graphers 
 
 SFTECH.ts <- ts(graphers$TechSector, start = c(1972,1), frequency = 12)
 Empl.ts <- ts(graphers$EMPLOY, start = c(1972,1), frequency = 12)
@@ -53,8 +65,8 @@ names(chart_data) <- c('x', 'func', 'thevalue')
 chart_data<- data.frame(chart_data)
 attach(chart_data)
 
-betterwork <- data.frame("MonthlyDate" = as.numeric(chart_data$x), "Datatype" = chart_data$func, "thevalues" = as.numeric(chart_data$thevalue))
-
+betterwork <- data.frame("MonthlyDate" = as.numeric(chart_data$x), 
+                        "Datatype" = chart_data$func, "thevalues" = as.numeric(chart_data$thevalue))
 attach(betterwork)
 
 
@@ -69,10 +81,46 @@ lines(Empl.ts, col = "green")
 lines(CPI.ts, col = "red")
 #lines(CapUtil.ts, col = "blue")
 
-TechEffect <- lm(SFTECH ~ UnemplRate + CapUtil + RecessionIdic + DisposableINcome + ProducerPriceIndex + FedUndRate
-                 )
+
+#Creating a dummy variable
+Recession.dummy <- dummy.data.frame(DataProject, RecessionIdic)
+Recession.dummy
+
+
+TechEffect <- lm(SFTECH ~ Unemp + CapUtil + log(Dis.IncPerCap) + PPI
+                + FedFund + SupplyofHouses + RecessionIndic, data = DataProject)
 summary(TechEffect)
 vif(TechEffect)
 
-stargazer(TechEffect, type = "latex", title = "Regression model", align = TRUE, dep.var.labels = "OLS")
-stargazer(vif(TechEffect), type = "latex", title = "VIF", align = TRUE, dep.var.labels = "OLS")
+
+
+  
+stargazer(NewRegression, Tech, TechEffect, type = "latex", title = "OLS Model (1)", align = TRUE, 
+          dep.var.labels = "SFTECH", font.size = "small", single.row = TRUE,
+          column.sep.width = "1pt"
+           )
+
+NewRegression.Dataframe <- data.frame(vif(NewRegression))
+Tech.Dataframe <- data.frame(vif(Tech))
+TechEffect.dataframe <- data.frame(vif(TechEffect))
+Tech.Dataframe
+TechEffect.dataframe
+
+stargazer(NewRegression.Dataframe, Tech.Dataframe, TechEffect.dataframe, colnames = c("OLS 1", "OLS 2", "OLS3"), type = "latex", title = "VIF", 
+          align = TRUE, summary = FALSE)
+stargazer(ReconstructVif.one, type = "latex", title = "VIF", align = TRUE, summary = FALSE, dep.var.labels = "OLS")
+stargazer(TechEffect.dataframe, type = "latex", title = "VIF", align = TRUE, dep.var.labels = "OLS", summary = FALSE)
+
+plot(TechEffect)
+plot(NewRegression)
+#Housing Regression
+TheTechinSF <- read.csv("Herewegoagain.csv", header = TRUE)
+attach(TheTechinSF)
+View(TheTechinSF)
+
+data.frame(UnemplMSA, NASDAQCOM)
+fitregress<- lm(TechyfromSF~ UnemplMSA+ HomePricesofSF+ EconCond+ NASDAQ)
+summary(fitregress)
+vif(fitregress)
+
+plot(fitregress)
