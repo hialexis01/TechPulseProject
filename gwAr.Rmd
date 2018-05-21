@@ -2,12 +2,16 @@
 title: "What the TEch Sector Indicates about our Economy"
 author: "Alexis Rivera-Andrade"
 date: "5/21/2018"
-output: beamer_presentation
+output:
+  slidy_presentation: default
+  beamer_presentation: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
 #This is attaching files for the tech sector
+
+library(forecast)
+library(car)
 
 DataProject <- read.csv("FinalDatafornow.csv", header = TRUE)
 attach(DataProject)
@@ -20,7 +24,7 @@ SFTECH.ts <- ts(SFTECH, start = c(1972,1), frequency = 12)
 ```
 
 
-TechPulse  =  \(\beta_1\) + Unemp\(\beta_2\) + CapUtil\(\beta_3\) + Recession\(\beta_4\) + DIncome\(\beta_5\) + \(\beta_6\)
+TechPulse  =  \(\beta_1\) + Unemp\(\beta_2\) + CapUtil\(\beta_3\) +  DIncome\(\beta_4\) + PPI\(\beta_5\) + RecessionsIndic \(\beta_6\)
 #This is attaching files for the tech sector
 
 
