@@ -1,5 +1,5 @@
 ---
-title: "What the TEch Sector Indicates about our Economy"
+title: "What the Tech Sector Indicates about the U.S. Economy"
 author: "Alexis Rivera-Andrade"
 date: "5/21/2018"
 output:
@@ -23,9 +23,8 @@ SFTECH.ts <- ts(SFTECH, start = c(1972,1), frequency = 12)
 
 ```
 
-
-TechPulse  =  \(\beta_1\) + Unemp\(\beta_2\) + CapUtil\(\beta_3\) +  DIncome\(\beta_4\) + PPI\(\beta_5\) + RecessionsIndic \(\beta_6\)
-#This is attaching files for the tech sector
+#Model 
+TechPulse  =  \(\beta_1\) + Unemp\(\beta_2\) + CapUtil\(\beta_3\) +  DIncome\(\beta_4\) + PPI\(\beta_5\) + & RecessionsIndic \(\beta_6\)
 
 
 
